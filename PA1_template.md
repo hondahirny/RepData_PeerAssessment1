@@ -4,9 +4,7 @@ author: "Marcin Hirny"
 date: "November 8, 2015"
 output: html_document
 ---
-```{r setoptions, cache = 1,fig.height=1}
 
-```
 
 ###Loading the Data
 This assignment is a report of data input from a personal activity monitoring device.  The raw data file was "repdata-data-activity.zip" and was dowloaded from the following link:
@@ -17,7 +15,8 @@ When uncompressed, the zip archive contained one file, called "activity.csv"
 
 The following code was used to read in the data into R:
 
-```{r}
+
+```r
 rawdata <- read.csv("activity.csv")
 ```
 
@@ -29,26 +28,43 @@ The variables included were:
 ###What is mean total number of steps taken per day?
 The following code calculates the total number of steps per day:
 
-```{r}
+
+```r
 stepsperday <- tapply(rawdata$steps,rawdata$date,sum)
 ```
 
 Looking at the total steps per day, a simple histogram can tell part of the story:
-```{r, cache=FALSE}
+
+```r
 hist(stepsperday, xlim = c(0,25000), breaks = 10, 
          col = "BLUE", xlab = "Steps Per Day", 
          main = "Histogram of Steps Per Day")
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+
 The steps per day data has the following mean and median:
-```{r}
+
+```r
 mean(stepsperday, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(stepsperday, na.rm = TRUE)
+```
+
+```
+## [1] 10765
 ```
 
 ###What is the average daily activity pattern?
 A time series plot of the 5-minute intervals can show the overall activity throughout the day:
-```{r}
+
+```r
 stepsperint <- as.numeric(tapply(rawdata$steps,rawdata$interval,mean, na.rm = TRUE))
 
 plotdata <- cbind.data.frame(unique(rawdata$interval),stepsperint)
@@ -64,20 +80,33 @@ plot(plotdata$X,plotdata$Y,
      lwd = 1)
 ```
 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+
 The plot clearly shows a spike in steps at approximately 8:00 am.  The following code determined the actual peak step interval:
-```{r}
+
+```r
 plotdata[plotdata$Y == max(plotdata$Y),1]
+```
+
+```
+## [1] 835
 ```
 Running the code determines 8:35am interval to have the peak quantity of steps, on average.
 
 ###Imputing missing values
 The original data set contains quite a few NAs:
-```{r}
+
+```r
 sum(is.na(rawdata$steps) == TRUE)
 ```
 
+```
+## [1] 2304
+```
+
 My strategy for dealing with the NA values is to replace al NAs with the overall mean for that 5-minute interval, creating a new data set:
-```{r}
+
+```r
 cleandata <- rawdata
     
 for(i in 1:nrow(rawdata)) {
@@ -91,23 +120,40 @@ cleanstepsperday <- tapply(cleandata$steps,cleandata$date,sum)
 ```
 
 This histogram shows a change from the original data:
-```{r}
+
+```r
 hist(cleanstepsperday, 
     xlim = c(0,25000), 
     breaks = 10, 
     col = "BLUE", 
     xlab = "Steps Per Day", 
     main = "Histogram of Steps Per Day")
-    
+```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png) 
+
+```r
 mean(cleanstepsperday, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(cleanstepsperday, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
 ```
 
 The effect of clearing out the NAs was fairly minimal.  The mean of the data did not change, while the median shifted slightly.  
 
 ###Are there differences in activity patterns between weekdays and weekends?
 It's likely that our activity levels may differ between weekdays and weekends.  The following code classifies the data accordingly and plots it:
-```{r}
+
+```r
 #Create a new data set from the cleaned up data set.
 datedata <- cleandata
     
@@ -147,8 +193,9 @@ names(intervaldata) <- c("Interval","Steps", "Weekend")
 #Using lattice system to plot the data.
 library(lattice)
 xyplot(Steps ~ Interval | Weekend, data = intervaldata, type = "l",layout = c(1, 2))
-
 ```
+
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
 
 As shown in the graph, there is a difference in activity between weekends and weekdays.
 
